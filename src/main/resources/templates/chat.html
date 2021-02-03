@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="icon" href="/assets/images/favicon.png" type="image/png">
+    <title>在线聊天</title>
+    <!--Begin  Page Level  CSS -->
+    <link href="/assets/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+    <!--End  Page Level  CSS -->
+    <link href="/assets/css/icons.css" rel="stylesheet">
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet">
+    <link href="/assets/css/responsive.css" rel="stylesheet">
+    <link href="/assets/plugins/summernote-master/summernote.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="http://cdn.staticfile.org/element-ui/2.13.1/theme-chalk/index.css">
+    <script src="http://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
+    <script src="http://cdn.staticfile.org/axios/0.19.2/axios.min.js"></script>
+    <script src="http://cdn.staticfile.org/element-ui/2.13.1/index.js"></script>
+</head>
+
+<body class="sticky-header">
+    <!--引入左侧菜单栏-->
+    <div th:replace="lefter :: lefterBar(activeUrl='index')"></div>
+    <!-- main content start-->
+    <div class="main-content">
+        <div th:replace="header :: headerBar"></div>
+        <!--body wrapper start-->
+        <div class="wrapper" id="chatApp">
+            <!--Start Page Title-->
+            <div class="page-title-box">
+                <h4 class="page-title">在线聊天 </h4>
+                <ol class="breadcrumb">
+                    <li>
+                        <a href="#"></a>
+                    </li>
+                    <li class="active">
+                    </li>
+                </ol>
+                <div class="clearfix"></div>
+            </div>
+            <!--End Page Title-->
+
+            <!--Start chat widget-->
+            <div class="col-md-10">
+                <div class="white-box">
+                    <h2 class="header-title">Chat</h2>
+                    <div class="chat-widget" style=" height: 400px; overflow-y:scroll">
+                        <ul class="chat-scroll-list" style="height: auto!important; overflow: auto!important;">
+                            <div v-for="(item,index) in messageList" :key="item.id">
+                                <li class="left" v-if="item.tplClass === 'left'">
+                                    <img :src="item.fromUser.avatar" alt="" />
+                                    <div class="chat-info">
+                                        <a class="name" href="#">{{item.fromUser.realname}}</a> AT
+                                        <span class="datetime">{{item.time}}</span><br />
+                                        <span class="message">
+                                            {{item.message}}
+                                        </span>
+                                    </div>
+                                </li>
+                                <li class="right" v-if="item.tplClass === 'right'">
+                                    <img :src="item.toUser.avatar" alt="" />
+                                    <div class="chat-info">
+                                        <a class="name" href="#">{{item.toUser.realname}}</a> AT
+                                        <span class="datetime">{{item.time}}</span><br />
+                                        <span class="message">
+                                            {{item.message}}
+                                        </span>
+                                    </div>
+                                </li>
+                            </div>
+                        </ul>
+                    </div>
+
+                    <hr style="height:3px;border:none;border-top:3px double black;" />
+                    <input type="hidden" id="toUserId" th:value="${toUserId}">
+                    <input type="hidden" id="fromUserId" th:value="${fromUserId}">
+                    <div class="compose-body">
+                        <div class="compose-message">
+                            <textarea class="summernote" name="message"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary round" id="addButton"
+                        @click="sendMessage()">发送</button>
+                </div>
+            </div>
+        </div>
+        <!--End chat widget-->
+    </div>
+    <!--End row-->
+    </div>
+    <!-- End Wrapper-->
+    <!--Start  Footer -->
+    <div th:replace="footer :: footerBar"></div>
+    <!--End footer -->
+    </div>
+    <!--End main content -->
+
+
+    <!--Begin core plugin -->
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/bootstrap.min.js"></script>
+    <script src="/assets/js/jquery.slimscroll.js "></script>
+    <script src="/assets/js/jquery.nicescroll.js"></script>
+    <script src="/assets/js/functions.js"></script>
+    <!-- End core plugin -->
+    <!-- BEGIN PAGE LEVEL SCRIPTS -->
+    <script src="/assets/plugins/summernote-master/summernote.min.js"></script>
+    <script src="/assets/pages/compose.js"></script>
+    <!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+
+    <script>
+        new Vue({
+            el: '#chatApp',
+            data: {
+                toUserId: 0,
+                fromUserId: 0,
+                intervalId: null,
+                messageList: [],// 接收的消息数组
+                message: '',
+            },
+            methods: {
+                //初始化
+                init() {
+                    this.toUserId = $('#toUserId').val();
+                    this.fromUserId = $('#fromUserId').val();
+                    axios.get('/api/chat/pageList?toUserId=' + this.toUserId).then(response => {
+                        this.messageList = response.data.list.reverse();
+                    });
+                },
+                //发送消息
+                sendMessage() {
+                    this.message = $(".note-editable").html();
+                    axios.get('/api/chat/sendMessage?fromUserId=' + this.fromUserId + '&toUserId=' + this.toUserId + '&message=' + this.message).then(response => {
+                        this.message = '';
+                    });
+                },
+                // 定时刷新数据函数
+                dataRefreh() {
+                    // 计时器正在进行中，退出函数
+                    if (this.intervalId != null) {
+                        return;
+                    }
+                    // 计时器为空，操作
+                    this.intervalId = setInterval(() => {
+                        //console.log("刷新" + new Date());
+                        this.init(); //加载数据函数
+                    }, 500);
+                },
+                // 停止定时器
+                clear() {
+                    clearInterval(this.intervalId); //清除计时器
+                    this.intervalId = null; //设置为null
+                },
+            },
+            mounted() {
+                this.init();
+            },
+            created() {
+                this.dataRefreh();
+            },
+            destroyed() {
+                // 在页面销毁后，清除计时器
+                this.clear();
+            }
+        });
+    </script>
+</body>
+
+</html>

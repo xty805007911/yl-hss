@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="icon" href="/assets/images/favicon.png" type="image/png">
+    <title>SpringBoot-Vue-Web</title>
+    <!--Begin  Page Level  CSS -->
+    <link href="/assets/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+    <!--End  Page Level  CSS -->
+    <link href="/assets/css/icons.css" rel="stylesheet">
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet">
+    <link href="/assets/css/responsive.css" rel="stylesheet">
+    <link href="/assets/plugins/summernote-master/summernote.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="http://cdn.staticfile.org/element-ui/2.13.1/theme-chalk/index.css">
+    <script src="http://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
+    <script src="http://cdn.staticfile.org/axios/0.19.2/axios.min.js"></script>
+    <script src="http://cdn.staticfile.org/element-ui/2.13.1/index.js"></script>
+</head>
+
+<body class="sticky-header">
+    <!--引入左侧菜单栏-->
+    <div th:replace="lefter :: lefterBar(activeUrl='workManager')"></div>
+    <!-- main content start-->
+    <div class="main-content">
+        <div th:replace="header :: headerBar"></div>
+        <!--body wrapper start-->
+        <div class="wrapper" id="work-add">
+            <!--Start Page Title-->
+            <div class="page-title-box">
+                <h4 class="page-title"></h4>
+                <ol class="breadcrumb">
+                    <li>
+                        <a href="#"></a>
+                    </li>
+                    <li class="active">
+                    </li>
+                </ol>
+                <div class="clearfix"></div>
+            </div>
+            <!--End Page Title-->
+
+            <!--Start row-->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="white-box">
+                        <h2 class="header-title">工作记录添加</h2>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <el-form ref="form" :model="work" label-width="80px">
+                                            <el-form-item label="工作标题">
+                                                <el-input v-model="work.title"></el-input>
+                                            </el-form-item>
+                                            <el-form-item label="选择工单">
+                                                <el-select v-model="work.orderId" placeholder="请选择完成的订单">
+                                                    <el-option v-for="item in orderList" :label="'订单号：' + item.id"
+                                                        :value="item.id"></el-option>
+                                                </el-select>
+                                            </el-form-item>
+                                            <el-form-item label="工作内容">
+                                                <el-input type="textarea" v-model="work.content"></el-input>
+                                            </el-form-item>
+                                            <el-form-item>
+                                                <el-button type="primary" @click="onSubmit">创建</el-button>
+                                                <el-button>取消</el-button>
+                                            </el-form-item>
+                                        </el-form>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--End row-->
+
+        </div>
+        <!--End row-->
+
+        <!--Start  Footer -->
+        <div th:replace="footer :: footerBar"></div>
+        <!--End footer -->
+
+    </div>
+    <!-- End Wrapper-->
+
+    </div>
+    <!--End main content -->
+
+
+    <!--Begin core plugin -->
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/bootstrap.min.js"></script>
+    <script src="/assets/js/jquery.slimscroll.js "></script>
+    <script src="/assets/js/jquery.nicescroll.js"></script>
+    <script src="/assets/js/functions.js"></script>
+    <!-- End core plugin -->
+    <!-- BEGIN PAGE LEVEL SCRIPTS -->
+    <script src="/assets/plugins/summernote-master/summernote.min.js"></script>
+    <script src="/assets/pages/compose.js"></script>
+    <!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+
+    <script>
+        new Vue({
+            el: '#work-add',//与当前文件名保持一直
+            data: {
+                currentUser: {},
+                msg: '',
+                work: {
+                    title: '',
+                    content: '',
+                    orderId: '',
+                    userId: '',
+                },
+                orderList: [],
+            },
+            methods: {
+                //初始化
+                init() {
+                    this.getCurrentUser()
+                },
+
+                // 获取当前用户
+                getCurrentUser() {
+                    axios.get('/api/person/info/current/user').then(response => {
+                        this.currentUser = response.data
+                        // 获取当前用户所有订单(已完成的)
+                        this.getUserOrderList()
+                    });
+                },
+
+                // 获取当前用户所有订单(已完成的)
+                getUserOrderList() {
+                    axios.get('/api/order/list/user/' + this.currentUser.id + '?status=0').then(response => {
+                        if (response.data != null && response.data != '') {
+                            this.orderList = response.data
+                        }
+                    })
+                },
+
+                // 提交表单
+                onSubmit() {
+                    if (this.work.orderId == '') {
+                        this.$message({
+                            type: 'warning',
+                            message: '请选择一个订单哦~'
+                        });
+                        return 
+                    }
+
+                    this.work.userId = this.currentUser.id
+                    axios.post('/api/work/add', this.work).then(response => {
+                        if (response.data.code == 200) {
+                            this.$message({
+                                type: 'success',
+                                message: '添加成功~'
+                            });
+                        } else {
+                            this.$message({
+                                type: 'warning',
+                                message: '添加失败~'
+                            });
+                        }
+
+                    })
+                },
+
+            },
+            mounted() {
+                this.init();
+            }
+        });
+    </script>
+</body>
+
+</html>

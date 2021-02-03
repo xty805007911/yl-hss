@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="icon" href="/assets/images/favicon.png" type="image/png">
+    <title>用户登录</title>
+    <!--Begin  Page Level  CSS -->
+    <link href="/assets/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+    <!--End  Page Level  CSS -->
+    <link href="/assets/css/icons.css" rel="stylesheet">
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet">
+    <link href="/assets/css/responsive.css" rel="stylesheet">
+    <script src="http://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
+    <script src="http://cdn.staticfile.org/axios/0.19.2/axios.min.js"></script>
+    <!--Begin core plugin -->
+    <script src="/assets/js/jquery.min.js"></script>
+    <script src="/assets/js/bootstrap.min.js"></script>
+    <script src="/assets/js/jquery.slimscroll.js "></script>
+    <script src="/assets/js/jquery.nicescroll.js"></script>
+    <script src="/assets/js/functions.js"></script>
+    <!-- End core plugin -->
+</head>
+
+<body class="sticky-header">
+    <!--Start login Section-->
+    <section class="login-section">
+        <div class="container">
+            <div class="row">
+                <div class="login-wrapper" id="app">
+                    <div class="login-inner">
+
+                        <div class="logo">
+                            <img src="/assets/images/logo-dark.png" alt="logo" />
+                        </div>
+
+                        <h2 class="header-title text-center">系统登陆</h2>
+                        <h4 class="header-title text-center" style="color:red">{{msg}}</h4>
+                        <form method="post">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="mobile" name="mobile" v-model="mobile">
+                            </div>
+
+                            <div class="form-group">
+                                <input type="password" class="form-control" placeholder="password" name="password"
+                                    v-model="password">
+                            </div>
+
+                            <div class="form-group">
+                                <div class="pull-right">
+                                    <a href="reset-password.html" class="a-link">
+                                        <i class="fa fa-unlock-alt"></i> 忘记密码?
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="button" value="登陆" @click="toLogin()" class="btn btn-primary btn-block">
+                            </div>
+
+                            <div class="form-group text-center">
+                                没有账号?去<a th:href="@{/register}">注册 </a>
+                            </div>
+
+                            <div class="form-group text-center">
+                                <a th:href="@{/}">主页 </a>
+                            </div>
+
+                        </form>
+
+                        <div class="copy-text">
+                            <p class="m-0">2020 &copy; xty </p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    <!--End login Section-->
+
+
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            mobile: "",
+            password: "",
+            msg: ""
+        },
+        methods: {
+            //初始化
+            init() {
+            },
+            //发送消息
+            toLogin() {
+                const _this = this
+                let formUser = {
+                    "mobile": this.mobile,
+                    "password": this.password
+                };
+                axios.post('/api/common/login', formUser).then(response => {
+                    let dbUser = response.data
+                    if (dbUser === "") { //登录失败
+                        this.msg = "登录失败咯~"
+                    } else { //登录成功
+                        window.location.href = "/"
+                    }
+                });
+            },
+        },
+        mounted() {
+            this.init();
+        },
+    });
+</script>
+
+</html>

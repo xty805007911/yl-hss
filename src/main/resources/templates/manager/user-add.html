@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <link rel="icon" href="/assets/images/favicon.png" type="image/png">
+  <title>银龄健康服务站</title>
+  <!--Begin  Page Level  CSS -->
+  <link href="/assets/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+  <!--End  Page Level  CSS -->
+  <link href="/assets/css/icons.css" rel="stylesheet">
+  <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/responsive.css" rel="stylesheet">
+  <link href="/assets/plugins/summernote-master/summernote.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="http://cdn.staticfile.org/element-ui/2.13.1/theme-chalk/index.css">
+  <script src="http://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
+  <script src="http://cdn.staticfile.org/axios/0.19.2/axios.min.js"></script>
+  <script src="http://cdn.staticfile.org/element-ui/2.13.1/index.js"></script>
+</head>
+
+<body class="sticky-header">
+  <!--引入左侧菜单栏-->
+  <div th:replace="lefter :: lefterBar(activeUrl='manage-user')"></div>
+  <!-- main content start-->
+  <div class="main-content">
+    <div th:replace="header :: headerBar"></div>
+    <!--body wrapper start-->
+    <div class="wrapper" id="manage-user-add">
+      <!--Start Page Title-->
+      <div class="page-title-box">
+        <h4 class="page-title"></h4>
+        <ol class="breadcrumb">
+          <li>
+            <a href="#"></a>
+          </li>
+          <li class="active">
+          </li>
+        </ol>
+        <div class="clearfix"></div>
+      </div>
+      <!--End Page Title-->
+
+      <!--Start row-->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="white-box">
+            <h2 class="header-title">用户添加</h2>
+            <div class="row">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <div class="col-md-6">
+                    <div style="margin: 20px;"></div>
+                    <el-form label-position="left" label-width="80px" :model="userById">
+                      <el-form-item label="真实姓名">
+                        <el-input v-model="userById.realname"></el-input>
+                      </el-form-item>
+                      <el-form-item label="联系方式">
+                        <el-input v-model="userById.mobile"></el-input>
+                      </el-form-item>
+                      <el-form-item label="用户密码">
+                        <el-input v-model="userById.password" type="password"></el-input>
+                      </el-form-item>
+                      <el-form-item label="用户昵称">
+                        <el-input v-model="userById.username"></el-input>
+                      </el-form-item>
+                      <el-form-item label="联系地址">
+                        <el-input v-model="userById.address"></el-input>
+                      </el-form-item>
+                      <el-form-item label="">
+                        <el-button type="primary" round @click="handleAdd()">添加</el-button>
+                      </el-form-item>
+                    </el-form>
+                    </el-pagination>
+                  </div>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--End row-->
+
+    </div>
+    <!--End row-->
+
+    <!--Start  Footer -->
+    <div th:replace="footer :: footerBar"></div>
+    <!--End footer -->
+
+  </div>
+  <!-- End Wrapper-->
+
+  </div>
+  <!--End main content -->
+
+
+  <!--Begin core plugin -->
+  <script src="/assets/js/jquery.min.js"></script>
+  <script src="/assets/js/bootstrap.min.js"></script>
+  <script src="/assets/js/jquery.slimscroll.js "></script>
+  <script src="/assets/js/jquery.nicescroll.js"></script>
+  <script src="/assets/js/functions.js"></script>
+  <!-- End core plugin -->
+  <!-- BEGIN PAGE LEVEL SCRIPTS -->
+  <script src="/assets/plugins/summernote-master/summernote.min.js"></script>
+  <script src="/assets/pages/compose.js"></script>
+  <!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+
+  <script>
+    new Vue({
+      el: '#manage-user-add',
+      data: {
+        userById: {},
+        userId: null,
+      },
+      methods: {
+        // 初始化
+        init() {
+        },
+
+        //修改
+        handleAdd() {
+          this.userById.roleId = 1  //添加普通用户
+          this.userById.enabled = 1 //当前状态可用
+          axios.post('/api/user/user/add',this.userById).then(response => {
+            if(response.data.code == 200) {
+              alert("添加成功啦(*^_^*)")
+              window.location.href = "/manager/user/list"
+            }else {
+              alert("出错咯 "+response.data.msg+" /(ㄒoㄒ)/~~")
+            }
+          });
+          
+        }
+      },
+      mounted() {
+        this.init();
+      }
+    });
+  </script>
+</body>
+
+</html>

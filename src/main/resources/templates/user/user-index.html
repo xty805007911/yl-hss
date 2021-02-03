@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <link rel="icon" href="/assets/images/favicon.png" type="image/png">
+  <title>银龄健康服务站</title>
+  <!--Begin  Page Level  CSS -->
+  <link href="/assets/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+  <!--End  Page Level  CSS -->
+  <link href="/assets/css/icons.css" rel="stylesheet">
+  <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/responsive.css" rel="stylesheet">
+  <link href="/assets/plugins/summernote-master/summernote.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="http://cdn.staticfile.org/element-ui/2.13.1/theme-chalk/index.css">
+  <script src="http://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
+  <script src="http://cdn.staticfile.org/axios/0.19.2/axios.min.js"></script>
+  <script src="http://cdn.staticfile.org/element-ui/2.13.1/index.js"></script>
+  <script type="text/javascript" src="https://cdn.bootcss.com/moment.js/2.22.1/moment.js"></script>
+</head>
+
+<body class="sticky-header">
+  <!--引入左侧菜单栏-->
+  <div th:replace="lefter :: lefterBar(activeUrl='index')"></div>
+  <!-- main content start-->
+  <div class="main-content">
+    <div th:replace="header :: headerBar"></div>
+    <!--body wrapper start-->
+    <div class="wrapper" id="user-index">
+      <!--Start Page Title-->
+      <div class="page-title-box">
+        <h4 class="page-title"></h4>
+        <ol class="breadcrumb">
+          <li>
+            <a href="#"></a>
+          </li>
+          <li class="active">
+          </li>
+        </ol>
+        <div class="clearfix"></div>
+      </div>
+      <!--End Page Title-->
+
+      <!--Start row-->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="white-box">
+            <div class="row" style="text-align:center">
+              <el-carousel indicator-position="outside">
+                <el-carousel-item v-for="item in 1" :key="item">
+                  <h1>欢迎来到银龄健康服务站~</h1>
+                </el-carousel-item>
+              </el-carousel>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="white-box">
+            <h2 class="header-title">护工查询</h2>
+            <div class="row">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <el-table :data="careList" style="width: 100%">
+                    <el-table-column type="expand">
+                      <template slot-scope="props">
+                        <el-form label-position="left" inline class="demo-table-expand">
+                          <el-form-item label="">
+                            <h3>
+                              <strong>{{ props.row.realname }}</strong>的健康信息
+                            </h3>
+                          </el-form-item><br />
+
+                          <el-form-item label="体温">
+                            <span>{{ props.row.care.temperature }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="身高">
+                            <span>{{ props.row.care.height }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="体重">
+                            <span>{{ props.row.care.weight }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="健康状况">
+                            <span>{{ props.row.care.healthy }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="创建时间">
+                            <span>{{ props.row.createTime }}</span>
+                          </el-form-item><br />
+                        </el-form>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="#" prop="index" type="index">
+
+                    </el-table-column>
+                    <el-table-column label="">
+                      <template slot-scope="scope">
+                        <img :src="scope.row.avatar" style="height:35px;width:35px;" alt="">
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="真实姓名" prop="realname">
+                    </el-table-column>
+                    <el-table-column label="当前状态">
+                      <template slot-scope="scope">
+                        <el-tag v-if="scope.row.enabled == 0" type="danger">不可用</el-tag>
+                        <el-tag v-if="scope.row.enabled == 1" type="success">正常</el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" align="center">
+                      <template slot-scope="scope">
+                        <el-button v-if="scope.row.enabled == 1" size="mini" type="success" @click="handleOrder(scope.$index, scope.row)">预约</el-button>
+                        <el-button v-if="scope.row.enabled == 0" size="mini" type="danger" disabled>预约</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  </tbody>
+                  <el-pagination :current-page="page" :page-size="pageSize" :total="total" :pager-count="5" layout="prev, pager, next"
+                    @current-change="getCareList">
+                  </el-pagination>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="white-box">
+            <h2 class="header-title">推荐护工</h2>
+            <div class="row">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <el-table :data="recommendList" style="width: 100%">
+                    <el-table-column type="expand">
+                      <template slot-scope="props">
+                        <el-form label-position="left" inline class="demo-table-expand">
+                          <el-form-item label="">
+                            <h3>
+                              <strong>{{ props.row.realname }}</strong>的健康信息
+                            </h3>
+                          </el-form-item><br />
+
+                          <el-form-item label="体温">
+                            <span>{{ props.row.care.temperature }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="身高">
+                            <span>{{ props.row.care.height }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="体重">
+                            <span>{{ props.row.care.weight }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="健康状况">
+                            <span>{{ props.row.care.healthy }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="创建时间">
+                            <span>{{ props.row.createTime }}</span>
+                          </el-form-item><br />
+                        </el-form>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="#" prop="index" type="index">
+
+                    </el-table-column>
+                    <el-table-column label="">
+                      <template slot-scope="scope">
+                        <img :src="scope.row.avatar" style="height:35px;width:35px;" alt="">
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="真实姓名" prop="realname">
+                    </el-table-column>
+                    <el-table-column label="当前状态">
+                      <template slot-scope="scope">
+                        <el-tag v-if="scope.row.enabled == 0" type="danger">不可用</el-tag>
+                        <el-tag v-if="scope.row.enabled == 1" type="success">正常</el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" align="center">
+                      <template slot-scope="scope">
+                        <el-button v-if="scope.row.enabled == 1" size="mini" type="success" @click="handleOrder(scope.$index, scope.row)">预约</el-button>
+                        <el-button v-if="scope.row.enabled == 0" size="mini" type="danger" disabled>预约</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div class="white-box">
+            <h2 class="header-title">我的订单</h2>
+            <div class="row">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <template>
+                    <el-table ref="filterTable" :data="orderList" style="width: 100%">
+                      <el-table-column prop="createTime" :formatter="dateFormat" label="创建时间" sortable width="180">
+                      </el-table-column>
+                      <el-table-column prop="orderTime" :formatter="dateFormat" label="预约时间" sortable width="180">
+                      </el-table-column>
+                      <el-table-column prop="endTime" :formatter="dateFormat" label="完成时间" sortable width="180">
+                      </el-table-column>
+                      <el-table-column prop="careUser.realname" label="护工姓名" width="180">
+                      </el-table-column>
+                      <el-table-column prop="userDemo" label="您的备注">
+                      </el-table-column>
+                      <el-table-column prop="careDemo" label="护工备注">
+                      </el-table-column>
+                      <el-table-column prop="status" label="订单状态" width="100">
+                        <template slot-scope="scope">
+                          <el-tag type="success" disable-transitions v-if="scope.row.status==0">已完成</el-tag>
+                          <el-tag type="warning" disable-transitions v-if="scope.row.status==1">等待接单</el-tag>
+                          <el-tag type="info" disable-transitions v-if="scope.row.status==2">已接单</el-tag>
+                          <el-tag type="danger" disable-transitions v-if="scope.row.status==-1">客户取消</el-tag>
+                          <el-tag type="danger" disable-transitions v-if="scope.row.status==-2">护工取消</el-tag>
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="status" label="" width="100">
+                        <template slot-scope="scope">
+                          <el-button size="mini" type="" @click="orderDetail(scope.$index, scope.row)">详情</el-button>
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                  </template>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--End row-->
+
+    </div>
+    <!--End row-->
+
+    <!--Start  Footer -->
+    <div th:replace="footer :: footerBar"></div>
+    <!--End footer -->
+
+  </div>
+  <!-- End Wrapper-->
+
+  </div>
+  <!--End main content -->
+
+
+  <!--Begin core plugin -->
+  <script src="/assets/js/jquery.min.js"></script>
+  <script src="/assets/js/bootstrap.min.js"></script>
+  <script src="/assets/js/jquery.slimscroll.js "></script>
+  <script src="/assets/js/jquery.nicescroll.js"></script>
+  <script src="/assets/js/functions.js"></script>
+  <!-- End core plugin -->
+  <!-- BEGIN PAGE LEVEL SCRIPTS -->
+  <script src="/assets/plugins/summernote-master/summernote.min.js"></script>
+  <script src="/assets/pages/compose.js"></script>
+  <!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+
+  <script>
+    new Vue({
+      el: '#user-index',//与当前文件名保持一直
+      data: {
+        currentUser: {},
+        careList: [],//护工列表
+        page: 1,
+        total: 0,
+        pageSize: 0,
+        orderList: [],//用户订单列表
+        recommendList: [],//推荐列表
+      },
+      methods: {
+        //初始化
+        init() {
+          this.getCareList(this.page)
+          this.getCurrentUser()
+
+        },
+        //初始化分页数据
+        initPage(responseData) {
+          this.total = responseData.total
+          this.page = responseData.page
+          this.pageSize = responseData.rows
+        },
+        // 获取当前用户
+        getCurrentUser() {
+          axios.get('/api/person/info/current/user').then(response => {
+            this.currentUser = response.data
+            //获取推荐护工列表
+            this.getRecommendList()
+            //获取用户的订单
+            this.getOrderList()
+          });
+        },
+
+        // 获取用户分页查询数据
+        getCareList(currentPage) {
+          this.page = currentPage;
+          axios.get('/api/user/user/list?roleId=2&page=' + this.page).then(response => {
+            this.initPage(response.data)
+            this.careList = response.data.list
+            for (let i = 0; i < this.careList.length; i++) {
+              axios.get('/api/care/get/' + this.careList[i].id).then(response => {
+                let care = response.data
+                this.careList[i].care = care
+              })
+            }
+
+          });
+        },
+
+        //推荐护工列表
+        getRecommendList() {
+          axios.get('/api/recommend/order/user/' + this.currentUser.id).then(response => {
+            this.recommendList = response.data
+            for (let i = 0; i < this.recommendList.length; i++) {
+              axios.get('/api/care/get/' + this.recommendList[i].id).then(response => {
+                let care = response.data
+                this.recommendList[i].care = care
+              })
+            }
+          })
+        },
+
+        // 获取订单
+        getOrderList() {
+          if (this.currentUser.id == undefined) {
+            return
+          }
+          axios.get('/api/order/page/list?page=1&userId=' + this.currentUser.id).then(response => {
+            this.orderList = response.data.list
+          })
+        },
+
+        // 去订单详情页面
+        handleOrder(index, row) {
+          window.location.href = "/user/order/add?careId=" + row.id
+        },
+
+        //日期格式化
+        dateFormat(row, column) {
+          var date = row[column.property];
+          if (date == undefined) { return '' };
+          return moment(date).format("YYYY-MM-DD HH:mm:ss")
+
+        },
+
+        // 订单详情
+        orderDetail(index, row) {
+          window.location.href = "/user/order/" + row.id
+        }
+
+      },
+      mounted() {
+        this.init();
+      }
+    });
+  </script>
+  <style>
+    .el-carousel__item h1 {
+      color: #475669;
+      font-size: 36px;
+      opacity: 0.75;
+      line-height: 300px;
+      margin: 0;
+    }
+
+    .el-carousel__item:nth-child(2n) {
+      background-color: #99a9bf;
+    }
+
+    .el-carousel__item:nth-child(2n+1) {
+      background-color: #d3dce6;
+    }
+  </style>
+</body>
+
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <link rel="icon" href="/assets/images/favicon.png" type="image/png">
+  <title>银龄健康服务站</title>
+  <!--Begin  Page Level  CSS -->
+  <link href="/assets/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+  <!--End  Page Level  CSS -->
+  <link href="/assets/css/icons.css" rel="stylesheet">
+  <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/responsive.css" rel="stylesheet">
+  <link href="/assets/plugins/summernote-master/summernote.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="http://cdn.staticfile.org/element-ui/2.13.1/theme-chalk/index.css">
+  <script src="http://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
+  <script src="http://cdn.staticfile.org/axios/0.19.2/axios.min.js"></script>
+  <script src="http://cdn.staticfile.org/element-ui/2.13.1/index.js"></script>
+</head>
+
+<body class="sticky-header">
+  <!--引入左侧菜单栏-->
+  <div th:replace="lefter :: lefterBar(activeUrl='orderManager')"></div>
+  <!-- main content start-->
+  <div class="main-content">
+    <div th:replace="header :: headerBar"></div>
+    <!--body wrapper start-->
+    <div class="wrapper" id="user-order-add">
+      <!--Start Page Title-->
+      <div class="page-title-box">
+        <h4 class="page-title"></h4>
+        <ol class="breadcrumb">
+          <li>
+            <a href="#"></a>
+          </li>
+          <li class="active">
+          </li>
+        </ol>
+        <div class="clearfix"></div>
+      </div>
+      <!--End Page Title-->
+      <!--Start row-->
+      <div class="row">
+        <!-- Start inbox widget-->
+        <div class="col-md-12">
+          <div class="white-box">
+            <h2 class="header-title">
+              <el-page-header @back="returnHistory" content="订单详情">
+              </el-page-header>
+            </h2>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <div class="col-md-2"></div>
+                <div class="col-md-8">
+                  <el-divider>护工基本信息</el-divider>
+                  <div class="card-profile">
+                    <div class="profile-header">
+                      <img :src="user.avatar" alt="">
+                      <input type="hidden" id="orderId" th:value="${orderId}">
+                    </div>
+                  </div><br /><br />
+
+                  <el-form ref="form" :model="user" label-width="80px">
+                    <el-form-item label="护工姓名">
+                      <el-input disabled v-model="user.realname"></el-input>
+                    </el-form-item>
+                    <el-form-item label="联系方式">
+                      <el-input disabled v-model="user.mobile"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <el-divider>护工健康信息</el-divider>
+                  <el-form ref="form" :model="care" label-width="80px">
+                    <el-form-item label="实时体温">
+                      <el-input disabled v-model="care.temperature"></el-input>
+                    </el-form-item>
+                    <el-form-item label="护工身高">
+                      <el-input disabled v-model="care.height"></el-input>
+                    </el-form-item>
+                    <el-form-item label="护工体重">
+                      <el-input disabled v-model="care.weight"></el-input>
+                    </el-form-item>
+                    <el-form-item label="健康状况">
+                      <el-input disabled v-model="care.healthy"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <el-divider>客户基本信息</el-divider>
+                  <div class="card-profile">
+                    <div class="profile-header">
+                      <img :src="user2.avatar" alt="">
+                      <input type="hidden" id="orderId" th:value="${orderId}">
+                    </div>
+                  </div><br /><br />
+                  <el-form ref="form" :model="order" label-width="80px">
+                    <el-form-item label="客户姓名">
+                      <el-input disabled v-model="user2.realname"></el-input>
+                    </el-form-item>
+                    <el-form-item label="联系方式">
+                      <el-input disabled v-model="user2.mobile"></el-input>
+                    </el-form-item>
+                    <el-form-item label="家庭地址">
+                      <el-input disabled v-model="user2.address"></el-input>
+                    </el-form-item>
+                    <el-form-item label="健康状况">
+                      <el-input disabled v-model="care.healthy"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <el-divider>预约信息</el-divider>
+                  <el-form ref="form" :model="order" label-width="80px">
+                    <el-form-item label="订单状态">
+                      <template slot-scope="scope">
+                        <el-tag type="success" disable-transitions v-if="order.status==0">已完成</el-tag>
+                        <el-tag type="warning" disable-transitions v-if="order.status==1">等待接单</el-tag>
+                        <el-tag type="info" disable-transitions v-if="order.status==2">已接单</el-tag>
+                        <el-tag type="danger" disable-transitions v-if="order.status==-1">客户取消</el-tag>
+                        <el-tag type="danger" disable-transitions v-if="order.status==-2">护工取消</el-tag>
+                      </template>
+
+                    </el-form-item>
+                    <el-form-item label="预约时间">
+                      <el-date-picker v-model="order.orderTime" :disabled="isUpdateOrderTimeDisabled" type="datetime"
+                        placeholder="选择日期时间">
+                      </el-date-picker>
+                    </el-form-item>
+                    <el-form-item label="用户备注">
+                      <el-input v-model="order.userDemo" :disabled="isUpdateOrderTimeDisabled"></el-input>
+                    </el-form-item>
+                    <el-form-item label="护工备注">
+                      <el-input v-model="order.careDemo" :disabled="!isUpdateOrderTimeDisabled || order.status==1 || order.status==0 || roleId!=2"></el-input>
+                    </el-form-item>
+                    <el-form-item label="完成时间">
+                      <el-date-picker v-model="order.endTime" :disabled="!isUpdateOrderTimeDisabled || order.status==1 || roleId!=2 || order.status!=2"
+                        type="datetime" placeholder="选择日期时间">
+                      </el-date-picker>
+                    </el-form-item>
+
+                    <!-- 评价 -->
+                    <el-divider v-if="order.status == 0 && roleId != 2">订单评价</el-divider>
+                    <el-form-item label="订单评价" v-if="order.status == 0 && roleId != 2">
+                      <el-rate v-model="ratingNum" show-text :disabled="roleId!=1 || isRatinged"></el-rate>
+                      <el-input type="textarea" v-model="content" :disabled="roleId!=1 || isRatinged"></el-input>
+                      <el-button v-if="roleId==1 && !isRatinged" type="primary" @click="postOrderRating">评价</el-button>
+                    </el-form-item>
+                    <el-form-item label="订单回复" v-if="roleId!=2&&order.status==0">
+                      <el-input v-if="roleId!=2&&order.status==0" type="textarea" v-model="contentReply" :disabled="isRatingRaply||roleId==1||!isRatinged"></el-input>
+                      <el-button v-if="roleId==3&&isRatingRaply==false&&order.status==0&&isRatinged" type="primary" @click="postOrderRating">回复</el-button>
+                    </el-form-item>
+                  </el-form>
+                  <button v-if="(order.status == 1 || order.status == 2)&& roleId == 1 " @click="updateOrder" class="btn btn-primary round">修改</button>
+                  <button v-if="order.status == 1 && roleId == 2 " @click="toReciveOrder" class="btn btn-success round">接单</button>
+                  <button v-if="order.status == 2 && roleId == 2 " @click="successOrder" class="btn btn-success round">完成</button>
+                  <button v-if="order.status == 1 || order.status == 2" @click="cancelOrder" class="btn btn-danger round">取消订单</button>
+                </div>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+        <!-- Start inbox widget-->
+      </div>
+      <!--End row-->
+
+    </div>
+    <!--End row-->
+
+    <!--Start  Footer -->
+    <div th:replace="footer :: footerBar"></div>
+    <!--End footer -->
+
+  </div>
+  <!-- End Wrapper-->
+
+  </div>
+  <!--End main content -->
+
+
+  <!--Begin core plugin -->
+  <script src="/assets/js/jquery.min.js"></script>
+  <script src="/assets/js/bootstrap.min.js"></script>
+  <script src="/assets/js/jquery.slimscroll.js "></script>
+  <script src="/assets/js/jquery.nicescroll.js"></script>
+  <script src="/assets/js/functions.js"></script>
+  <!-- End core plugin -->
+  <!-- BEGIN PAGE LEVEL SCRIPTS -->
+  <script src="/assets/plugins/summernote-master/summernote.min.js"></script>
+  <script src="/assets/pages/compose.js"></script>
+  <!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+
+  <script>
+    new Vue({
+      el: '#user-order-add',
+      data: {
+        currentUser: {},
+        care: {},//护工健康信息
+        user: {},//护工基本信息
+        user2: {},//用户信息
+        msg: '',
+        order: {},//订单
+        orderRating: {},//订单评价
+        isUpdateOrderTimeDisabled: false,
+        roleId: 1,
+        isRatinged: false,//是否评价过此订单了
+        ratingNum: 0,//评价分数
+        content: '',//用户评价内容
+        contentReply: '',//评价回复内容
+        isRatingRaply: false,//管理员是否评价了此订单
+      },
+      methods: {
+        //初始化
+        init() {
+          //this.getCurrentOrder()
+          //this.getCareById()
+          this.getCurrentUser()
+        },
+
+        // 获取当前用户
+        getCurrentUser() {
+          axios.get('/api/person/info/current/user').then(response => {
+            this.currentUser = response.data
+            this.roleId = this.currentUser.roleId
+            this.getCurrentOrder()
+          });
+        },
+
+        // 获取当前订单
+        getCurrentOrder() {
+          let orderId = $("#orderId").val()
+          axios.get('/api/order/' + orderId).then(response => {
+            this.order = response.data
+
+            // 普通用户，则可用
+            if (this.currentUser.roleId == 1) {
+              //设置订单时间的Disabled状态,如果是1，则可用
+              this.isUpdateOrderTimeDisabled = this.order.status == 1 ? false : true
+
+            } else {
+              this.isUpdateOrderTimeDisabled = true
+            }
+            this.getCareById()
+            //查询订单评价
+            this.getOrderRating()
+          });
+        },
+
+        // 根据id查询护工
+        getCareById() {
+          axios.get('/api/user/user/' + this.order.careId).then(response => {
+            this.user = response.data
+          });
+          axios.get('/api/user/user/' + this.order.userId).then(response => {
+            this.user2 = response.data
+          });
+          axios.get('/api/care/get/' + this.order.careId).then(response => {
+            if (response.data == null || response.data == "") {
+              this.care = {
+                temperature: "",
+                height: "",
+                weight: "",
+                healthy: ""
+              }
+            } else {
+              this.care = response.data
+            }
+          })
+        },
+
+        // 修改订单
+        updateOrder() {
+          axios.post('/api/order/update', this.order).then(response => {
+            this.$message({
+              type: 'success',
+              message: '修改成功~'
+            });
+          })
+        },
+        //取消订单
+        cancelOrder() {
+          this.$confirm('确认取消订单？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            //重新获取当前订单状态
+            let orderId = $("#orderId").val()
+            axios.get('/api/order/' + orderId).then(response => {
+              let orderStatus = response.data.status
+              if (orderStatus <= 0) {//不可取消
+                this.init()//刷新当前页面
+                this.$message({
+                  type: 'error',
+                  message: '订单取消失败~'
+                });
+              } else {//可以取消订单
+
+                // 发送请求 取消订单
+                let cancelOrder = response.data
+                if (this.currentUser.roleId == 1) {
+                  cancelOrder.status = -1 //订单由用户关闭
+                } else {
+                  cancelOrder.status = -2 //订单由护工关闭
+                }
+
+                axios.post('/api/order/update', cancelOrder).then(response => {
+                  this.$message({
+                    type: 'success',
+                    message: '取消订单成功~'
+                  });
+
+                  this.init()//刷新当前页面
+                })//post end
+              }
+            });
+          }).catch(() => {
+
+          });
+        },
+
+        //护工接单
+        toReciveOrder() {
+          let order = this.order
+          order.status = 2
+          axios.post('/api/order/update', order).then(response => {
+            this.$message({
+              type: 'success',
+              message: '接单成功~'
+            });
+            window.location.href = '/order/list'
+            //this.init()//刷新当前页面
+          })//post end
+        },
+
+        //护工完成订单
+        successOrder() {
+          if (this.order.endTime == null || this.order.endTime == '') {
+            this.$message({
+              type: 'error',
+              message: '请填写完成日期~'
+            })
+          } else {
+            let orderPost = this.order
+            orderPost.status = 0
+            axios.post('/api/order/update', orderPost).then(response => {
+              this.$message({
+                type: 'success',
+                message: '已完成订单~'
+              });
+              this.init()
+              //this.init()//刷新当前页面
+            })//post end
+          }
+
+        },
+
+        //查询订单评价
+        getOrderRating() {
+          axios.get('/api/order/rating/order/' + this.order.id).then(response => {
+            this.orderRating = response.data
+            if (this.orderRating == null || this.orderRating == '') {//用户未评价过订单
+              this.isRatinged = false
+              this.isRatingRaply = false
+            } else {//用户已评价了订单
+              this.isRatinged = true
+              this.isRatingRaply = (this.orderRating.contentReply === null || this.orderRating.contentReply === '') ? false : true;
+              this.content = this.orderRating.content
+              this.ratingNum = this.orderRating.rating
+              this.contentReply = this.orderRating.contentReply
+            }
+          })
+        },
+
+        // 订单评价
+        postOrderRating() {
+
+          let orderId = $("#orderId").val()
+
+          //用户评价
+          if (this.currentUser.roleId == 1) {
+            this.content;
+            this.orderRating = {
+              rating: this.ratingNum,
+              content: this.content,
+              orderId: orderId
+            }
+
+            axios.post('/api/order/rating/add', this.orderRating).then(response => {
+              this.isRatinged = true
+              this.$message({
+                type: 'success',
+                message: '评价成功~'
+              })
+              this.init()
+            })
+          }
+
+          //管理员评价
+          if (this.currentUser.roleId == 3) {
+            axios.get('/api/order/rating/order/' + this.order.id).then(response => {
+              this.orderRating.contentReply = this.contentReply
+              axios.post('/api/order/rating/update', this.orderRating).then(response => {
+                this.isRatinged = true
+                this.$message({
+                  type: 'success',
+                  message: '回复成功~'
+                })
+                this.isRatingRaply = true
+                this.init()
+              })
+            })
+          }
+        },
+
+
+        // 返回上一层
+        returnHistory() {
+          window.history.back(-1)
+        }
+
+      },
+      mounted() {
+        this.init();
+      }
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <link rel="icon" href="/assets/images/favicon.png" type="image/png">
+  <title>银龄健康服务站</title>
+  <!--Begin  Page Level  CSS -->
+  <link href="/assets/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
+  <!--End  Page Level  CSS -->
+  <link href="/assets/css/icons.css" rel="stylesheet">
+  <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/css/style.css" rel="stylesheet">
+  <link href="/assets/css/responsive.css" rel="stylesheet">
+  <link href="/assets/plugins/summernote-master/summernote.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="http://cdn.staticfile.org/element-ui/2.13.1/theme-chalk/index.css">
+  <script src="http://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
+  <script src="http://cdn.staticfile.org/axios/0.19.2/axios.min.js"></script>
+  <script src="http://cdn.staticfile.org/element-ui/2.13.1/index.js"></script>
+</head>
+
+<body class="sticky-header">
+  <!--引入左侧菜单栏-->
+  <div th:replace="lefter :: lefterBar(activeUrl='manage-user')"></div>
+  <!-- main content start-->
+  <div class="main-content">
+    <div th:replace="header :: headerBar"></div>
+    <!--body wrapper start-->
+    <div class="wrapper" id="user-manager-list">
+      <!--Start Page Title-->
+      <div class="page-title-box">
+        <h4 class="page-title"></h4>
+        <ol class="breadcrumb">
+          <li>
+            <a href="#"></a>
+          </li>
+          <li class="active">
+          </li>
+        </ol>
+        <div class="clearfix"></div>
+      </div>
+      <!--End Page Title-->
+
+      <!--Start row-->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="white-box">
+            <h2 class="header-title">护工管理</h2>
+            <div class="row">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <el-table :data="userList" style="width: 100%">
+                    <el-table-column type="expand">
+                      <template slot-scope="props">
+                        <el-form label-position="left" inline class="demo-table-expand">
+                          <el-form-item label="">
+                            <span>
+                              <img :src="props.row.avatar" style="height:35px;width:35px;" alt="">
+                            </span>
+                          </el-form-item><br />
+                          <el-form-item label="用户ID">
+                            <span>{{ props.row.id }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="真实姓名">
+                            <span>{{ props.row.realname }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="体温">
+                            <span>{{ props.row.care.temperature }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="身高">
+                            <span>{{ props.row.care.height }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="体重">
+                            <span>{{ props.row.care.weight }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="健康状况">
+                            <span>{{ props.row.care.healthy }}</span>
+                          </el-form-item><br />
+                          <el-form-item label="创建时间">
+                            <span>{{ props.row.createTime }}</span>
+                          </el-form-item><br />
+                        </el-form>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="#" prop="index" type="index">
+
+                    </el-table-column>
+                    <el-table-column label="用户ID" prop="id">
+                    </el-table-column>
+                    <el-table-column label="真实姓名" prop="realname">
+                    </el-table-column>
+                    <el-table-column label="地址" prop="address">
+                    </el-table-column>
+                    <el-table-column label="当前状态">
+                      <template slot-scope="scope">
+                        <el-tag v-if="scope.row.enabled == 0" type="danger">不可用</el-tag>
+                        <el-tag v-if="scope.row.enabled == 1" type="success">正常</el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" align="right">
+                      <template slot-scope="scope">
+                        <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                        <el-button v-if="scope.row.enabled==1" size="mini" type="danger" @click="handleDelete(scope.$index, scope.row,0)">删除</el-button>
+                        <el-button v-if="scope.row.enabled==0" size="mini" type="success" @click="handleDelete(scope.$index, scope.row,1)">启用</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  </tbody>
+                  <el-pagination :current-page="page" :page-size="pageSize" :total="total" :pager-count="5" layout="prev, pager, next"
+                    @current-change="getUserList">
+                  </el-pagination>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--End row-->
+
+    </div>
+    <!--End row-->
+
+    <!--Start  Footer -->
+    <div th:replace="footer :: footerBar"></div>
+    <!--End footer -->
+
+  </div>
+  <!-- End Wrapper-->
+
+  </div>
+  <!--End main content -->
+
+
+  <!--Begin core plugin -->
+  <script src="/assets/js/jquery.min.js"></script>
+  <script src="/assets/js/bootstrap.min.js"></script>
+  <script src="/assets/js/jquery.slimscroll.js "></script>
+  <script src="/assets/js/jquery.nicescroll.js"></script>
+  <script src="/assets/js/functions.js"></script>
+  <!-- End core plugin -->
+  <!-- BEGIN PAGE LEVEL SCRIPTS -->
+  <script src="/assets/plugins/summernote-master/summernote.min.js"></script>
+  <script src="/assets/pages/compose.js"></script>
+  <!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+
+  <script>
+    new Vue({
+      el: '#user-manager-list',
+      data: {
+        userList: [],//用户列表
+        pageNumUserList: [],//分页信息列表
+        page: 1,
+        total: 0,
+        pageSize: 0
+
+      },
+      methods: {
+        // 初始化
+        init() {
+          this.getUserList(this.page)
+        },
+
+        //初始化分页数据
+        initPage(responseData) {
+          this.total = responseData.total
+          this.page = responseData.page
+          this.pageSize = responseData.rows
+        },
+
+        // 获取用户分页查询数据
+        getUserList(currentPage) {
+          this.page = currentPage;
+          axios.get('/api/user/user/list?roleId=2&page=' + this.page).then(response => {
+            this.initPage(response.data)
+            this.userList = response.data.list
+            for (let i = 0; i < this.userList.length; i++) {
+              axios.get('/api/care/get/' + this.userList[i].id).then(response => {
+                let care = response.data
+                this.userList[i].care = care
+              })
+            }
+
+          });
+        },
+
+        // 修改
+        handleEdit(index, row) {
+          window.location.href = "/manager/user/" + row.id;
+        },
+
+        // 删除
+        handleDelete(index, row, enabled) {
+          //console.log(index, row);
+          let rowUser = this.userList[index]
+          rowUser.enabled = enabled
+          axios.post('/api/user/user/update', rowUser).then(response => {
+            //调用成功
+            if (response.data.code == 200) {
+              //alert('更新成功~')
+            } else {
+              //alert('更新失败~')
+            }
+          });
+
+        },
+
+      },
+      mounted() {
+        this.init();
+      }
+    });
+  </script>
+</body>
+
+</html>
