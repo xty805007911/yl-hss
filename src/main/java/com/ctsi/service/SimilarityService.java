@@ -55,6 +55,17 @@ public class SimilarityService {
             }// for i
         }
 
+        // 处理推荐算法推荐数据存在相同护工的bug
+        if(!CollectionUtils.isEmpty(careList)) {
+            List<TbUser> onlyUserList = new ArrayList<>();
+            for(TbUser user : careList) {
+                if(!onlyUserList.contains(user)) {
+                    onlyUserList.add(user);
+                }
+            }
+            careList = onlyUserList;
+        }
+
         if(careList.size() > 5) {
             return careList.subList(0,5);
         }
